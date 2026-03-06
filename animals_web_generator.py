@@ -60,10 +60,11 @@ def get_animal_info_output(animals_subdata):
     excluding where items are None"""
     output = ""
     for fox in animals_subdata:
+        output += '<li class="cards__item">'
         for cat, info in fox.items():
             if info:
-                output += f"{cat.title()}: {info}\n"
-        output += "\n"
+                output += f'{cat.title()}: {info}<br/>\n'
+        output += '</li>'
     return output
 
 
