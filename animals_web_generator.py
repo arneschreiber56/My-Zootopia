@@ -1,5 +1,4 @@
 import json
-from pprint import pprint
 
 
 def load_data(file_path):
@@ -56,17 +55,59 @@ def create_reduced_animals_lst(animals_data):
         return []
 
 
+def get_animal_info_output(animals_subdata):
+    """gets animals_subdata and creates and returns a string of list content
+    excluding where items are None"""
+    output = ""
+    for fox in animals_subdata:
+        for cat, info in fox.items():
+            if info:
+                output += f"{cat.title()}: {info}\n"
+        output += "\n"
+    return output
+
+
+def get_html_content():
+    """get and returns the content of animals_template.html as str"""
+    try:
+        with open("animals_template.html", "r") as txt:
+            html_content = txt.read()
+            return html_content
+    except FileNotFoundError:
+        return None
+
+
+def write_html_animal(html_content):
+    """writes html_content_animal in file animals.html"""
+    try:
+        with open("animals.html", "w") as fileobj:
+            fileobj.write(html_content)
+            return True
+    except FileNotFoundError:
+        return False
+
+
 def main():
     animals_data = load_data("animals_data.json")
+
     if animals_data:
         animals_subdata = create_reduced_animals_lst(animals_data)
-        for fox in animals_subdata:
-            for cat, info in fox.items():
-                if info:
-                    print(f"{cat}: {info}")
-            print()
+        output = get_animal_info_output(animals_subdata)
+        html_content = get_html_content()
+        if html_content and html_content.count("__REPLACE_ANIMALS_INFO__") == 1:
+            html_content_animal = html_content.replace(
+                "__REPLACE_ANIMALS_INFO__", output
+            )
+        else:
+            print("could not find HTML or add output data!")
+            return
+        if write_html_animal(html_content_animal):
+            print("successfully created HTML animal.html!")
+        else:
+            print("could not create HTML animal.html!")
     else:
         print("No file 'animals_data.json' found")
+
 
 
 
