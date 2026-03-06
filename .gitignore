@@ -208,3 +208,4 @@ __marimo__/
 
 .gitignore
 .git
+test_animals_web_generator.py
