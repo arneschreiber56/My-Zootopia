@@ -57,13 +57,16 @@ def create_reduced_animals_lst(animals_data):
 
 def get_animal_info_output(animals_subdata):
     """gets animals_subdata and creates and returns a string of list content
-    excluding where items are None"""
+    excluding where items are None as cool html code"""
     output = ""
     for fox in animals_subdata:
         output += '<li class="cards__item">'
+        output += f'<div class="card__title">{fox.get('name')}</div>'
+        output += '<p class="card__text">'
         for cat, info in fox.items():
-            if info:
-                output += f'{cat.title()}: {info}<br/>\n'
+            if info and cat != 'name':
+                output += f'<strong>{cat.title()}:</strong> {info}<br/>'
+        output += '</p>'
         output += '</li>'
     return output
 
