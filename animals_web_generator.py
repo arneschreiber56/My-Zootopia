@@ -1,8 +1,13 @@
+"""MasterSchool Zootopia Codio Project"""
+
 import json
 
 
 def load_data(file_path):
-    """Loads a JSON file"""
+    """Load JSON data from a file.
+
+    Opens the given file path and returns the parsed JSON content.
+    Returns None if the file does not exist."""
     try:
         with open(file_path, "r") as handle:
             return json.load(handle)
@@ -11,9 +16,12 @@ def load_data(file_path):
 
 
 def get_check_animal_dict(animal):
-    """checks if animal information are valid and returns a comprehensive
-    dictionary of information about the animal"""
+    """Extract validated animal information from a raw JSON entry.
 
+    Performs defensive extraction of name, diet, location and type.
+    Missing or malformed fields are returned as None to ensure stability.
+
+    Returns a dictionary with the keys: name, diet, location, type."""
     fox_name = animal.get("name")  # .get("name") gibt entweder value oder None
 
     if isinstance(animal.get("characteristics"), dict):
@@ -39,11 +47,13 @@ def get_check_animal_dict(animal):
 
 
 def create_reduced_animals_lst(animals_data):
-    """Gets the json-data in animals_data and extracts core information
-    about foxes (name, diet, location(first value), type) from animals_data
-    and returns it as a list of dictionaries with each fox information bundle a dictionary.
-    When one item of information bundle is not found in the json file,
-    the value should be None in the newly created dictionary"""
+    """Create a list of reduced animal dictionaries.
+
+    Iterates through the raw JSON list and extracts core information
+    for each valid animal entry using defensive extraction. Invalid or
+    non-dictionary entries are skipped.
+
+    Returns a list of dictionaries with normalized animal information."""
     fox_lst = []
     if animals_data:
         for animal in animals_data:
@@ -56,8 +66,12 @@ def create_reduced_animals_lst(animals_data):
 
 
 def get_animal_info_output(animals_subdata):
-    """gets animals_subdata and creates and returns a string of list content
-    excluding where items are None as cool html code"""
+    """Generate HTML list items for the given animal data.
+
+    Builds a card-style HTML snippet for each animal, including a title
+    and formatted attributes. Fields with None values are omitted.
+
+    Returns a concatenated HTML string containing all list items."""
     output = ""
     for fox in animals_subdata:
         output += '<li class="cards__item">'
@@ -72,7 +86,10 @@ def get_animal_info_output(animals_subdata):
 
 
 def get_html_content():
-    """get and returns the content of animals_template.html as str"""
+    """Load the HTML template file.
+
+    Reads animals_template.html and returns its content as a string.
+    Returns None if the file is missing."""
     try:
         with open("animals_template.html", "r") as txt:
             html_content = txt.read()
@@ -82,7 +99,10 @@ def get_html_content():
 
 
 def write_html_animal(html_content):
-    """writes html_content_animal in file animals.html"""
+    """Write the final HTML output to animals.html.
+
+    Attempts to create or overwrite animals.html with the provided
+    HTML content. Returns True on success, False on failure."""
     try:
         with open("animals.html", "w") as fileobj:
             fileobj.write(html_content)
@@ -92,16 +112,25 @@ def write_html_animal(html_content):
 
 
 def main():
+    """Run the full animal processing and HTML generation pipeline.
+
+    Loads JSON data, extracts reduced animal information, formats it
+    into HTML, replaces the placeholder in the template, and writes
+    the final output file. Prints status messages for all major steps."""
     animals_data = load_data("animals_data.json")
 
     if animals_data:
+        print("Data successfully loaded!")
         animals_subdata = create_reduced_animals_lst(animals_data)
+        print("Reduced animals data list successfully created!")
         output = get_animal_info_output(animals_subdata)
+        print("Animals info output successfully created!")
         html_content = get_html_content()
         if html_content and html_content.count("__REPLACE_ANIMALS_INFO__") == 1:
             html_content_animal = html_content.replace(
                 "__REPLACE_ANIMALS_INFO__", output
             )
+            print("Placeholder in HTML replaced!")
         else:
             print("could not find HTML or add output data!")
             return
@@ -111,8 +140,6 @@ def main():
             print("could not create HTML animal.html!")
     else:
         print("No file 'animals_data.json' found")
-
-
 
 
 if __name__ == "__main__":
