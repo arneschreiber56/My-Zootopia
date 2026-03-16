@@ -1,6 +1,7 @@
 """MasterSchool Zootopia Codio Project"""
 
 import requests
+import html
 
 URL = "https://api.api-ninjas.com/v1/animals"
 API_KEY = "mguXnpVqJI7mcZYxz68YaMeJ88AlVeaaCjU1IsD1"
@@ -19,12 +20,17 @@ def get_response_json(animal):
     to ensure stable downstream processing.
 
     Returns a list containing raw animal data from the API."""
-    response = requests.get(
-        URL,
-        params={"name": animal},
-        headers={"X-Api-Key": API_KEY},
-        timeout=10
-    )
+    try:
+        response = requests.get(
+            URL,
+            params={"name": animal},
+            headers={"X-Api-Key": API_KEY},
+            timeout=10
+        )
+    # requests.RequestExceptions only catches network errors
+    except requests.RequestException as e:
+        print(e)
+        return []
     if response.status_code == 200:
         return response.json()
     return []
@@ -135,7 +141,11 @@ def write_html_animal(html_content):
         with open(NEW_HTML, "w") as fileobj:
             fileobj.write(html_content)
             return True
-    except FileNotFoundError:
+    #This exception is raised when a system function returns a system-related
+    # error, including I/O failures such as “file not found” or “disk full”
+    # (not for illegal argument types or other incidental errors).
+    except OSError as e:
+        print(e)
         return False
 
 
@@ -150,35 +160,71 @@ def get_user_animal_query():
     return user_input.strip()
 
 
+def replace_html_text(html_content, output):
+    """Replace the placeholder in the HTML template with generated output.
+
+    Searches the template for the predefined placeholder and replaces it
+    with the provided HTML snippet. Replacement occurs only if the template
+    exists and contains the placeholder exactly once.
+
+    Returns the updated HTML string on success, or error message."""
+    if html_content and html_content.count(POINTER) == 1:
+        html_content_animal = html_content.replace(
+            POINTER, output
+        )
+        print("Placeholder in HTML replaced!")
+        return html_content_animal
+    else:
+        return "could not find HTML or add output data!"
+
+
+
+def display_html_error_message(animal_query, html_content):
+    """Insert an error message into the HTML template and write the output file.
+
+    Escapes the user-provided query to prevent HTML injection, builds an
+    error message, replaces the placeholder in the template, and writes the
+    resulting HTML to the output file. Prints status messages indicating
+    success or failure.
+
+    Returns None"""
+    # avoiding html injection:
+    safe_query = html.escape(animal_query)
+    error_message = (
+        f"<h2>Could not find any animal in the database with your "
+        f"search term {safe_query}!</h2>")
+    html_content_error = replace_html_text(html_content, error_message)
+    if write_html_animal(html_content_error):
+        print("Request failed")
+    else:
+        print("Request and creation of HTML failed!")
+
+
 def main():
     """Run the full animal processing and HTML generation pipeline.
 
     Loads JSON data, extracts reduced animal information, formats it
     into HTML, replaces the placeholder in the template, and writes
     the final output file. Prints status messages for all major steps."""
+    html_content = get_html_content()
     animal_query = get_user_animal_query()
     animals_data = get_response_json(animal_query)
+    if not html_content:
+        print("No HTML-Template found!")
+        return
     if animals_data:
         print("Data successfully requested!")
         animals_subdata = create_reduced_animals_lst(animals_data)
         print("Reduced animals data list successfully created!")
         output = get_animal_info_output(animals_subdata)
         print("Animals info output successfully created!")
-        html_content = get_html_content()
-        if html_content and html_content.count(POINTER) == 1:
-            html_content_animal = html_content.replace(
-                POINTER, output
-            )
-            print("Placeholder in HTML replaced!")
-        else:
-            print("could not find HTML or add output data!")
-            return
+        html_content_animal = replace_html_text(html_content, output)
         if write_html_animal(html_content_animal):
             print("successfully created HTML animal.html!")
         else:
             print("could not create HTML animal.html!")
     else:
-        print(f"Request failed")
+        display_html_error_message(animal_query, html_content)
 
 
 if __name__ == "__main__":
