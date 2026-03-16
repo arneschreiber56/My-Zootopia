@@ -1,23 +1,27 @@
 """MasterSchool Zootopia Codio Project"""
 
 import json
+import requests
 
-JSON_FILE = "animals_data.json"
+URL = "https://api.api-ninjas.com/v1/animals"
+API_KEY = "mguXnpVqJI7mcZYxz68YaMeJ88AlVeaaCjU1IsD1"
+ANIMAL = "Fox"
 TEMPLATE_HTML = "animals_template.html"
 NEW_HTML = "animals.html"
 POINTER = "__REPLACE_ANIMALS_INFO__"
 
 
-def load_data(file_path):
-    """Load JSON data from a file.
+def create_payload_dict():
+    payload = {
+        "name": ANIMAL,
+        "X-Api-Key": API_KEY
+    }
+    return payload
 
-    Opens the given file path and returns the parsed JSON content.
-    Returns None if the file does not exist."""
-    try:
-        with open(file_path, "r") as handle:
-            return json.load(handle)
-    except FileNotFoundError:
-        return None
+
+def get_response_json():
+    response = requests.get(URL, params=create_payload_dict())
+    return response.json()
 
 
 def get_check_animal_dict(animal):
@@ -135,10 +139,10 @@ def main():
     Loads JSON data, extracts reduced animal information, formats it
     into HTML, replaces the placeholder in the template, and writes
     the final output file. Prints status messages for all major steps."""
-    animals_data = load_data(JSON_FILE)
+    animals_data = get_response_json()
 
     if animals_data:
-        print("Data successfully loaded!")
+        print("Data successfully requested!")
         animals_subdata = create_reduced_animals_lst(animals_data)
         print("Reduced animals data list successfully created!")
         output = get_animal_info_output(animals_subdata)
@@ -157,7 +161,7 @@ def main():
         else:
             print("could not create HTML animal.html!")
     else:
-        print(f"No file {JSON_FILE} found")
+        print(f"Request failed")
 
 
 if __name__ == "__main__":
