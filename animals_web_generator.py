@@ -1,17 +1,15 @@
 """MasterSchool Zootopia Codio Project"""
 
-import json
 import requests
 
 URL = "https://api.api-ninjas.com/v1/animals"
 API_KEY = "mguXnpVqJI7mcZYxz68YaMeJ88AlVeaaCjU1IsD1"
-ANIMAL = "Fox"
 TEMPLATE_HTML = "animals_template.html"
 NEW_HTML = "animals.html"
 POINTER = "__REPLACE_ANIMALS_INFO__"
 
 
-def get_response_json():
+def get_response_json(animal):
     """Request animal data from the API and return the JSON response as
     dicts in a list.
 
@@ -23,8 +21,9 @@ def get_response_json():
     Returns a list containing raw animal data from the API."""
     response = requests.get(
         URL,
-        params={"name": ANIMAL},
-        headers={"X-Api-Key": API_KEY}
+        params={"name": animal},
+        headers={"X-Api-Key": API_KEY},
+        timeout=10
     )
     if response.status_code == 200:
         return response.json()
@@ -38,26 +37,26 @@ def get_check_animal_dict(animal):
     Missing or malformed fields are returned as None to ensure stability.
 
     Returns a dictionary with the keys: name, diet, location, type."""
-    fox_name = animal.get("name")  # .get("name") gibt entweder value oder None
+    animal_name = animal.get("name")  # .get("name") gibt entweder value oder None
 
     if isinstance(animal.get("characteristics"), dict):
         characteristics = animal.get("characteristics")
-        fox_diet = characteristics.get("diet")
-        fox_type = characteristics.get("type")
+        animal_diet = characteristics.get("diet")
+        animal_type = characteristics.get("type")
     else:
-        fox_diet = None
-        fox_type = None
+        animal_diet = None
+        animal_type = None
 
     if isinstance(animal.get("locations"), list) and animal.get("locations"):
-        fox_location = animal.get("locations")[0]
+        animal_location = animal.get("locations")[0]
     else:
-        fox_location = None
+        animal_location = None
 
     animal_dict = {
-        "name": fox_name,
-        "diet": fox_diet,
-        "location": fox_location,
-        "type": fox_type
+        "name": animal_name,
+        "diet": animal_diet,
+        "location": animal_location,
+        "type": animal_type
     }
     return animal_dict
 
@@ -70,18 +69,18 @@ def create_reduced_animals_lst(animals_data):
     non-dictionary entries are skipped.
 
     Returns a list of dictionaries with normalized animal information."""
-    fox_lst = []
+    animal_lst = []
     if animals_data:
         for animal in animals_data:
             if isinstance(animal, dict):
                 animal_dict = get_check_animal_dict(animal)
-                fox_lst.append(animal_dict)
-        return fox_lst
+                animal_lst.append(animal_dict)
+        return animal_lst
     else:
         return []
 
 
-def serialize_animal(fox):
+def serialize_animal(animal):
     """Serialize a single animal dictionary into an HTML card.
 
     Builds a card-style HTML snippet for one animal using the provided
@@ -91,9 +90,9 @@ def serialize_animal(fox):
 
     Returns an HTML string representing one animal card."""
     output = '<li class="cards__item">\n'
-    output += f'<div class="card__title">{fox.get("name")}</div>\n'
+    output += f'<div class="card__title">{animal.get("name")}</div>\n'
     output += '<p class="card__text">\n'
-    for cat, info in fox.items():
+    for cat, info in animal.items():
         if info and cat != 'name':
             output += f'<strong>{cat.title()}:</strong> {info}<br/>\n'
     output += '</p>\n'
@@ -109,8 +108,8 @@ def get_animal_info_output(animals_subdata):
 
     Returns a concatenated HTML string containing all list items."""
     output = ""
-    for fox in animals_subdata:
-        output += serialize_animal(fox)
+    for animal in animals_subdata:
+        output += serialize_animal(animal)
     return output
 
 
@@ -140,14 +139,25 @@ def write_html_animal(html_content):
         return False
 
 
+def get_user_animal_query():
+    """Prompt the user to enter the name of an animal.
+
+    Reads the user input from the console and returns the entered
+    animal name as a string.
+
+    Returns the user-provided animal query."""
+    user_input = input("Enter a name of an animal: ")
+    return user_input.strip()
+
+
 def main():
     """Run the full animal processing and HTML generation pipeline.
 
     Loads JSON data, extracts reduced animal information, formats it
     into HTML, replaces the placeholder in the template, and writes
     the final output file. Prints status messages for all major steps."""
-    animals_data = get_response_json()
-
+    animal_query = get_user_animal_query()
+    animals_data = get_response_json(animal_query)
     if animals_data:
         print("Data successfully requested!")
         animals_subdata = create_reduced_animals_lst(animals_data)
