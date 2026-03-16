@@ -16,25 +16,30 @@ This module provides three core functions:
 - get_user_animal_query():
     Prompts the user for an animal name, strips surrounding whitespace,
     and returns the cleaned query string.
-.
-Returns: a list of animals, each animal is a dictionary:
+Returned API data structure:
+Each animal entry is a dictionary with the following general format:
+
 {
-  'name': ...,
-  'taxonomy': {
-    ...
-  },
-  'locations': [
-    ...
-  ],
-  'characteristics': {
-    ...
-  }
-},
+    'name': ...,
+    'taxonomy': {
+        ...
+    },
+    'locations': [
+        ...
+    ],
+    'characteristics': {
+        ...
+    }
+}
 """
 import requests
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 URL = "https://api.api-ninjas.com/v1/animals"
-API_KEY = "mguXnpVqJI7mcZYxz68YaMeJ88AlVeaaCjU1IsD1"
+API_KEY = os.getenv("API_KEY")
 TEMPLATE_HTML = "animals_template.html"
 
 
