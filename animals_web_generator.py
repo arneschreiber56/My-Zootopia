@@ -65,6 +65,26 @@ def create_reduced_animals_lst(animals_data):
         return []
 
 
+def serialize_animal(fox):
+    """Generate HTML list items for a list of animal dictionaries.
+
+    Iterates through the reduced animal data and serializes each
+    animal into an HTML card using the serialize_animal function.
+    The resulting HTML snippets are concatenated into a single
+    string.
+
+    Returns a combined HTML string containing all animal cards."""
+    output = '<li class="cards__item">\n'
+    output += f'<div class="card__title">{fox.get("name")}</div>\n'
+    output += '<p class="card__text">\n'
+    for cat, info in fox.items():
+        if info and cat != 'name':
+            output += f'<strong>{cat.title()}:</strong> {info}<br/>\n'
+    output += '</p>\n'
+    output += '</li>\n'
+    return output
+
+
 def get_animal_info_output(animals_subdata):
     """Generate HTML list items for the given animal data.
 
@@ -74,14 +94,7 @@ def get_animal_info_output(animals_subdata):
     Returns a concatenated HTML string containing all list items."""
     output = ""
     for fox in animals_subdata:
-        output += '<li class="cards__item">'
-        output += f'<div class="card__title">{fox.get('name')}</div>'
-        output += '<p class="card__text">'
-        for cat, info in fox.items():
-            if info and cat != 'name':
-                output += f'<strong>{cat.title()}:</strong> {info}<br/>'
-        output += '</p>'
-        output += '</li>'
+        output += serialize_animal(fox)
     return output
 
 
