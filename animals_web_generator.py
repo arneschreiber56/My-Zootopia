@@ -2,6 +2,11 @@
 
 import json
 
+JSON_FILE = "animals_data.json"
+TEMPLATE_HTML = "animals_template.html"
+NEW_HTML = "animals.html"
+POINTER = "__REPLACE_ANIMALS_INFO__"
+
 
 def load_data(file_path):
     """Load JSON data from a file.
@@ -58,7 +63,7 @@ def create_reduced_animals_lst(animals_data):
     if animals_data:
         for animal in animals_data:
             if isinstance(animal, dict):
-                animal_dict= get_check_animal_dict(animal)
+                animal_dict = get_check_animal_dict(animal)
                 fox_lst.append(animal_dict)
         return fox_lst
     else:
@@ -66,14 +71,14 @@ def create_reduced_animals_lst(animals_data):
 
 
 def serialize_animal(fox):
-    """Generate HTML list items for a list of animal dictionaries.
+    """Serialize a single animal dictionary into an HTML card.
 
-    Iterates through the reduced animal data and serializes each
-    animal into an HTML card using the serialize_animal function.
-    The resulting HTML snippets are concatenated into a single
-    string.
+    Builds a card-style HTML snippet for one animal using the provided
+    dictionary. The name is rendered as the card title and the remaining
+    attributes are displayed as labeled lines. Fields with None values
+    are omitted.
 
-    Returns a combined HTML string containing all animal cards."""
+    Returns an HTML string representing one animal card."""
     output = '<li class="cards__item">\n'
     output += f'<div class="card__title">{fox.get("name")}</div>\n'
     output += '<p class="card__text">\n'
@@ -101,10 +106,10 @@ def get_animal_info_output(animals_subdata):
 def get_html_content():
     """Load the HTML template file.
 
-    Reads animals_template.html and returns its content as a string.
+    Reads TEMPLATE_HTML and returns its content as a string.
     Returns None if the file is missing."""
     try:
-        with open("animals_template.html", "r") as txt:
+        with open(TEMPLATE_HTML, "r") as txt:
             html_content = txt.read()
             return html_content
     except FileNotFoundError:
@@ -117,7 +122,7 @@ def write_html_animal(html_content):
     Attempts to create or overwrite animals.html with the provided
     HTML content. Returns True on success, False on failure."""
     try:
-        with open("animals.html", "w") as fileobj:
+        with open(NEW_HTML, "w") as fileobj:
             fileobj.write(html_content)
             return True
     except FileNotFoundError:
@@ -130,7 +135,7 @@ def main():
     Loads JSON data, extracts reduced animal information, formats it
     into HTML, replaces the placeholder in the template, and writes
     the final output file. Prints status messages for all major steps."""
-    animals_data = load_data("animals_data.json")
+    animals_data = load_data(JSON_FILE)
 
     if animals_data:
         print("Data successfully loaded!")
@@ -139,9 +144,9 @@ def main():
         output = get_animal_info_output(animals_subdata)
         print("Animals info output successfully created!")
         html_content = get_html_content()
-        if html_content and html_content.count("__REPLACE_ANIMALS_INFO__") == 1:
+        if html_content and html_content.count(POINTER) == 1:
             html_content_animal = html_content.replace(
-                "__REPLACE_ANIMALS_INFO__", output
+                POINTER, output
             )
             print("Placeholder in HTML replaced!")
         else:
@@ -152,7 +157,7 @@ def main():
         else:
             print("could not create HTML animal.html!")
     else:
-        print("No file 'animals_data.json' found")
+        print(f"No file {JSON_FILE} found")
 
 
 if __name__ == "__main__":
