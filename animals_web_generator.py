@@ -1,39 +1,9 @@
 """MasterSchool Zootopia Codio Project"""
-
-import requests
+import data_fetcher
 import html
 
-URL = "https://api.api-ninjas.com/v1/animals"
-API_KEY = "mguXnpVqJI7mcZYxz68YaMeJ88AlVeaaCjU1IsD1"
-TEMPLATE_HTML = "animals_template.html"
 NEW_HTML = "animals.html"
 POINTER = "__REPLACE_ANIMALS_INFO__"
-
-
-def get_response_json(animal):
-    """Request animal data from the API and return the JSON response as
-    dicts in a list.
-
-    Sends a GET request to the animals endpoint using the configured
-    animal name and API key. If the request is successful (HTTP 200),
-    the JSON response is returned. Otherwise, an empty list is returned
-    to ensure stable downstream processing.
-
-    Returns a list containing raw animal data from the API."""
-    try:
-        response = requests.get(
-            URL,
-            params={"name": animal},
-            headers={"X-Api-Key": API_KEY},
-            timeout=10
-        )
-    # requests.RequestExceptions only catches network errors
-    except requests.RequestException as e:
-        print(e)
-        return []
-    if response.status_code == 200:
-        return response.json()
-    return []
 
 
 def get_check_animal_dict(animal):
@@ -119,19 +89,6 @@ def get_animal_info_output(animals_subdata):
     return output
 
 
-def get_html_content():
-    """Load the HTML template file.
-
-    Reads TEMPLATE_HTML and returns its content as a string.
-    Returns None if the file is missing."""
-    try:
-        with open(TEMPLATE_HTML, "r") as txt:
-            html_content = txt.read()
-            return html_content
-    except FileNotFoundError:
-        return None
-
-
 def write_html_animal(html_content):
     """Write the final HTML output to animals.html.
 
@@ -147,17 +104,6 @@ def write_html_animal(html_content):
     except OSError as e:
         print(e)
         return False
-
-
-def get_user_animal_query():
-    """Prompt the user to enter the name of an animal.
-
-    Reads the user input from the console and returns the entered
-    animal name as a string.
-
-    Returns the user-provided animal query."""
-    user_input = input("Enter a name of an animal: ")
-    return user_input.strip()
 
 
 def replace_html_text(html_content, output):
@@ -206,9 +152,9 @@ def main():
     Loads JSON data, extracts reduced animal information, formats it
     into HTML, replaces the placeholder in the template, and writes
     the final output file. Prints status messages for all major steps."""
-    html_content = get_html_content()
-    animal_query = get_user_animal_query()
-    animals_data = get_response_json(animal_query)
+    html_content = data_fetcher.get_html_content()
+    animal_query = data_fetcher.get_user_animal_query()
+    animals_data = data_fetcher.get_response_json(animal_query)
     if not html_content:
         print("No HTML-Template found!")
         return
