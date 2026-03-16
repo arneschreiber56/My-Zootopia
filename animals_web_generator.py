@@ -11,17 +11,24 @@ NEW_HTML = "animals.html"
 POINTER = "__REPLACE_ANIMALS_INFO__"
 
 
-def create_payload_dict():
-    payload = {
-        "name": ANIMAL,
-        "X-Api-Key": API_KEY
-    }
-    return payload
-
-
 def get_response_json():
-    response = requests.get(URL, params=create_payload_dict())
-    return response.json()
+    """Request animal data from the API and return the JSON response as
+    dicts in a list.
+
+    Sends a GET request to the animals endpoint using the configured
+    animal name and API key. If the request is successful (HTTP 200),
+    the JSON response is returned. Otherwise, an empty list is returned
+    to ensure stable downstream processing.
+
+    Returns a list containing raw animal data from the API."""
+    response = requests.get(
+        URL,
+        params={"name": ANIMAL},
+        headers={"X-Api-Key": API_KEY}
+    )
+    if response.status_code == 200:
+        return response.json()
+    return []
 
 
 def get_check_animal_dict(animal):
